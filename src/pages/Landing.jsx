@@ -1,65 +1,251 @@
 import { Link } from "react-router-dom";
 
 export default function Landing() {
-    return (
-        <div className="min-h-screen bg-gradient-to-b from-[#F5F7FA] to-[#E8F0F2]">
-            {/* Navbar */}
-            <nav className="flex justify-between items-center px-10 py-5 bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
-                <h1 className="text-2xl font-bold tracking-tight text-[#028090]">Centsible</h1>
-                <div className="flex gap-4 items-center">
-                    <Link to="/login" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-[#028090] transition-colors">
-                        Sign In
-                    </Link>
-                    <Link to="/register" className="px-5 py-2.5 text-sm font-medium bg-[#028090] text-white rounded-full hover:bg-[#026f7d] transition-all hover:shadow-lg hover:shadow-[#028090]/25">
-                        Get Started
-                    </Link>
-                </div>
-            </nav>
 
-            {/* Hero Section */}
-            <section className="text-center py-24 px-6">
-                <p className="text-sm font-semibold text-[#028090] uppercase tracking-widest mb-4">Built for Students</p>
-                <h2 className="text-5xl font-extrabold mb-5 leading-tight">
-                    Smart Budgeting.<br />
-                    <span className="text-[#028090]">Gamified Savings.</span>
-                </h2>
-                <p className="text-gray-500 text-lg mb-10 max-w-lg mx-auto leading-relaxed">
-                    Track spending, set goals, and earn your Savings Score — all in one place.
-                </p>
-                <Link to="/register" className="inline-block px-8 py-3.5 bg-[#028090] text-white rounded-full text-lg font-semibold hover:bg-[#026f7d] transition-all hover:shadow-xl hover:shadow-[#028090]/30 hover:-translate-y-0.5">
-                    Start for Free →
-                </Link>
-            </section>
+  return (
 
-            {/* Features */}
-            <section className="max-w-4xl mx-auto px-8 pb-20 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-7 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-                    <div className="w-10 h-10 rounded-lg bg-[#028090]/10 flex items-center justify-center mb-4">
-                        <span className="text-[#028090] font-bold text-lg">$</span>
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">Track Spending</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">Log income and expenses. See exactly where your money goes.</p>
-                </div>
-                <div className="bg-white p-7 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-                    <div className="w-10 h-10 rounded-lg bg-[#028090]/10 flex items-center justify-center mb-4">
-                        <span className="text-[#028090] font-bold text-lg">%</span>
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">Budget Goals</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">Set budgets for categories and track your progress visually.</p>
-                </div>
-                <div className="bg-white p-7 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-100">
-                    <div className="w-10 h-10 rounded-lg bg-[#028090]/10 flex items-center justify-center mb-4">
-                        <span className="text-[#028090] font-bold text-lg">★</span>
-                    </div>
-                    <h3 className="font-bold text-lg mb-2">Savings Score</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">Earn points for good habits. Unlock badges as you level up.</p>
-                </div>
-            </section>
+    <div style={{ minHeight: "100vh", backgroundColor: "#F5F7FA" }}>
 
-            {/* Footer */}
-            <footer className="text-center py-8 text-gray-400 text-sm border-t border-gray-200">
-                Centsible 2026 — Aryan, Dipekshya & Krish
-            </footer>
+      <nav style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "20px 40px", backgroundColor: "rgba(255,255,255,0.9)",
+        backdropFilter: "blur(8px)", position: "sticky", top: 0, zIndex: 10,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
+      }}>
+
+        <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#028090", letterSpacing: "-0.5px" }}>
+          Centsible
+        </h1>
+
+        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+
+          <Link to="/about" style={{ fontSize: "14px", color: "#666", textDecoration: "none" }}>
+            About
+          </Link>
+
+          <Link to="/login" style={{ fontSize: "14px", color: "#666", textDecoration: "none" }}>
+            Sign In
+          </Link>
+
+          <Link
+            to="/register"
+            style={{
+              fontSize: "14px",
+              padding: "10px 24px",
+              backgroundColor: "#028090",
+              color: "white",
+              borderRadius: "50px",
+              textDecoration: "none",
+              fontWeight: 600
+            }}
+          >
+            Get Started
+          </Link>
+
         </div>
-    );
+
+      </nav>
+
+      <section style={{
+        minHeight: "calc(100vh - 70px)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        textAlign: "center",
+        padding: "0 24px",
+        background: "linear-gradient(180deg, #F5F7FA 0%, #E0F2F1 50%, #F5F7FA 100%)"
+      }}>
+
+        <span style={{
+          fontSize: "12px",
+          fontWeight: 700,
+          color: "#028090",
+          textTransform: "uppercase",
+          letterSpacing: "3px",
+          marginBottom: "24px"
+        }}>
+          Built for Students
+        </span>
+
+        <h2 style={{
+          fontSize: "56px",
+          fontWeight: 900,
+          lineHeight: 1.1,
+          marginBottom: "24px",
+          color: "#1A1A2E"
+        }}>
+          Smart Budgeting.<br />
+          <span style={{ color: "#028090" }}>Gamified Savings.</span>
+        </h2>
+
+        <p style={{
+          fontSize: "18px",
+          color: "#777",
+          maxWidth: "480px",
+          lineHeight: 1.7,
+          marginBottom: "40px"
+        }}>
+          Track spending, set goals, and earn your Savings Score — all in one place.
+        </p>
+
+        <Link
+          to="/register"
+          style={{
+            fontSize: "18px",
+            padding: "16px 40px",
+            backgroundColor: "#028090",
+            color: "white",
+            borderRadius: "50px",
+            textDecoration: "none",
+            fontWeight: 700,
+            boxShadow: "0 8px 30px rgba(2,128,144,0.3)"
+          }}
+        >
+          Start for Free →
+        </Link>
+
+      </section>
+
+      <section style={{ padding: "100px 24px", backgroundColor: "white" }}>
+
+        <h2 style={{
+          fontSize: "32px",
+          fontWeight: 800,
+          textAlign: "center",
+          marginBottom: "60px"
+        }}>
+          How It Works
+        </h2>
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "48px",
+          maxWidth: "900px",
+          margin: "0 auto"
+        }}>
+
+          {[
+            { num: "1", title: "Sign Up", desc: "Create your free account in seconds. No credit card needed." },
+            { num: "2", title: "Track Your Money", desc: "Log your income and expenses. Set budgets for each category." },
+            { num: "3", title: "Level Up", desc: "Earn your Savings Score and unlock badges for smart spending." },
+          ].map((step) => (
+
+            <div key={step.num} style={{ textAlign: "center" }}>
+
+              <div style={{
+                width: "60px",
+                height: "60px",
+                borderRadius: "50%",
+                backgroundColor: "#028090",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 20px",
+                fontSize: "22px",
+                fontWeight: 800,
+                boxShadow: "0 6px 20px rgba(2,128,144,0.25)"
+              }}>
+                {step.num}
+              </div>
+
+              <h3 style={{ fontWeight: 700, fontSize: "18px", marginBottom: "8px" }}>
+                {step.title}
+              </h3>
+
+              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
+                {step.desc}
+              </p>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </section>
+
+      <section style={{
+        padding: "100px 24px",
+        background: "linear-gradient(180deg, #F5F7FA 0%, #E8F0F2 100%)"
+      }}>
+
+        <h2 style={{
+          fontSize: "32px",
+          fontWeight: 800,
+          textAlign: "center",
+          marginBottom: "60px"
+        }}>
+          Features
+        </h2>
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "24px",
+          maxWidth: "900px",
+          margin: "0 auto"
+        }}>
+
+          {[
+            { icon: "$", title: "Track Spending", desc: "Log income and expenses. See exactly where your money goes." },
+            { icon: "%", title: "Budget Goals", desc: "Set budgets for categories and track your progress visually." },
+            { icon: "★", title: "Savings Score", desc: "Earn points for good habits. Unlock badges as you level up." },
+          ].map((f) => (
+
+            <div key={f.title} style={{
+              backgroundColor: "white",
+              padding: "32px",
+              borderRadius: "20px",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+              border: "1px solid #eee"
+            }}>
+
+              <div style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "12px",
+                backgroundColor: "rgba(2,128,144,0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: "20px"
+              }}>
+                <span style={{ color: "#028090", fontWeight: 700, fontSize: "20px" }}>
+                  {f.icon}
+                </span>
+              </div>
+
+              <h3 style={{ fontWeight: 700, fontSize: "18px", marginBottom: "10px" }}>
+                {f.title}
+              </h3>
+
+              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.7 }}>
+                {f.desc}
+              </p>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </section>
+
+      <footer style={{
+        textAlign: "center",
+        padding: "32px",
+        color: "#aaa",
+        fontSize: "14px",
+        borderTop: "1px solid #e5e5e5",
+        backgroundColor: "white"
+      }}>
+        Centsible 2026 — Aryan, Dipekshya & Krish
+      </footer>
+
+    </div>
+
+  );
 }
