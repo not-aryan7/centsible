@@ -17,7 +17,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Buttons */
 button,
 a[class*="bg-"] {
   transition: all 0.2s ease;
@@ -27,21 +26,16 @@ button:active {
   transform: scale(0.97);
 }
 
-/* Inputs */
-input {
+input,
+select {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-input:focus {
+input:focus,
+select:focus {
   box-shadow: 0 0 0 3px rgba(2, 128, 144, 0.1);
 }
 
-/* Cards */
-.shadow-sm {
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-/* Smooth page transitions */
 section,
 nav,
 footer {
@@ -58,22 +52,4 @@ footer {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c4c4c4;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #a0a0a0;
 }
