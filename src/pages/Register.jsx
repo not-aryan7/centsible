@@ -9,61 +9,98 @@ export default function Register() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    // TODO: connect to Firebase in Sprint 2
     console.log("Register:", name, email, password);
     navigate("/dashboard");
   }
 
+  const inputStyle = {
+    width: "100%", padding: "12px 16px", border: "1px solid #e0e0e0",
+    borderRadius: "12px", fontSize: "14px", outline: "none",
+    transition: "border-color 0.2s", boxSizing: "border-box"
+  };
+
   return (
-    <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center px-4">
-      <div className="bg-white p-8 rounded-xl shadow-sm w-full max-w-sm">
-        <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
+    <div style={{
+      minHeight: "100vh", display: "flex", flexDirection: "column",
+      background: "linear-gradient(180deg, #F5F7FA 0%, #E0F2F1 50%, #F5F7FA 100%)"
+    }}>
+      <nav style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        padding: "20px 40px", backgroundColor: "rgba(255,255,255,0.9)",
+        backdropFilter: "blur(8px)", boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
+      }}>
+        <Link to="/" style={{ fontSize: "24px", fontWeight: 800, color: "#028090", textDecoration: "none", letterSpacing: "-0.5px" }}>
+          Centsible
+        </Link>
+        <Link to="/login" style={{ fontSize: "14px", color: "#666", textDecoration: "none" }}>
+          Already have an account? <span style={{ color: "#028090", fontWeight: 600 }}>Sign In</span>
+        </Link>
+      </nav>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm text-gray-500 block mb-1">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-[#028090]"
-              placeholder="Your name"
-              required
-            />
-          </div>
-          <div>
-            <label className="text-sm text-gray-500 block mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-[#028090]"
-              placeholder="you@email.com"
-              required
-            />
-          </div>
-          <div>
-            <label className="text-sm text-gray-500 block mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-sm outline-none focus:border-[#028090]"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-[#028090] text-white py-2 rounded-lg text-sm hover:bg-[#026f7d]"
-          >
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
+        <div style={{
+          backgroundColor: "white", padding: "48px", borderRadius: "24px",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.06)", width: "100%", maxWidth: "420px",
+          border: "1px solid #eee"
+        }}>
+          <h2 style={{ fontSize: "28px", fontWeight: 800, textAlign: "center", marginBottom: "8px", color: "#1A1A2E" }}>
             Create Account
-          </button>
-        </form>
+          </h2>
+          <p style={{ fontSize: "14px", color: "#999", textAlign: "center", marginBottom: "32px" }}>
+            Join Centsible and start saving smarter
+          </p>
 
-        <p className="text-center text-sm text-gray-400 mt-4">
-          Have an account? <Link to="/login" className="text-[#028090]">Sign in</Link>
-        </p>
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "#555", display: "block", marginBottom: "6px" }}>
+                Name
+              </label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+                placeholder="Your name" required style={inputStyle}
+                onFocus={(e) => e.target.style.borderColor = "#028090"}
+                onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} />
+            </div>
+
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "#555", display: "block", marginBottom: "6px" }}>
+                Email
+              </label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@email.com" required style={inputStyle}
+                onFocus={(e) => e.target.style.borderColor = "#028090"}
+                onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} />
+            </div>
+
+            <div style={{ marginBottom: "28px" }}>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "#555", display: "block", marginBottom: "6px" }}>
+                Password
+              </label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••" required style={inputStyle}
+                onFocus={(e) => e.target.style.borderColor = "#028090"}
+                onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} />
+            </div>
+
+            <button type="submit" style={{
+              width: "100%", padding: "14px", backgroundColor: "#028090",
+              color: "white", border: "none", borderRadius: "12px", fontSize: "15px",
+              fontWeight: 700, cursor: "pointer", transition: "background-color 0.2s",
+              boxShadow: "0 4px 16px rgba(2,128,144,0.25)"
+            }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = "#026f7d"}
+              onMouseLeave={(e) => e.target.style.backgroundColor = "#028090"}
+            >
+              Create Account
+            </button>
+          </form>
+
+          <p style={{ textAlign: "center", fontSize: "13px", color: "#aaa", marginTop: "24px" }}>
+            Have an account?{" "}
+            <Link to="/login" style={{ color: "#028090", textDecoration: "none", fontWeight: 600 }}>
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
