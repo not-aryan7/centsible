@@ -1,15 +1,20 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   function handleSubmit(e) {
     e.preventDefault();
-    console.log("Login:", email, password);
-    navigate("/dashboard");
+    setError("");
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => navigate("/dashboard"))
+      .catch((err) => setError(err.message));
   }
 
   return (
@@ -46,6 +51,11 @@ export default function Login() {
           </p>
 
           <form onSubmit={handleSubmit}>
+            {error && (
+              <p style={{ color: "#e74c3c", fontSize: "13px", textAlign: "center", marginBottom: "16px", padding: "10px", backgroundColor: "#fdf0ef", borderRadius: "8px" }}>
+                {error}
+              </p>
+            )}
             <div style={{ marginBottom: "20px" }}>
               <label style={{ fontSize: "13px", fontWeight: 600, color: "#555", display: "block", marginBottom: "6px" }}>
                 Email

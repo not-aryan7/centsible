@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
+    "firebase": "^12.10.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1",
@@ -29,5 +30,18 @@
   },
   "overrides": {
     "vite": "^8.0.0-beta.13"
-  }
+  },
+  "description": "A budgeting web app for students to track spending, set savings goals, and build better money habits.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/not-aryan7/centsible.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/not-aryan7/centsible/issues"
+  },
+  "homepage": "https://github.com/not-aryan7/centsible#readme"
 }
