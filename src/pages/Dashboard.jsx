@@ -1,19 +1,47 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { collection, addDoc, query, orderBy, onSnapshot } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
 export default function Dashboard() {
   const [transactions, setTransactions] = useState([]);
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("expense");
+  const navigate = useNavigate();
+  const user = auth.currentUser;
 
-  function handleAdd(e) {
+  // Load transactions from Firestore in real-time
+  useEffect(() => {
+    if (!user) return;
+    const q = query(
+      collection(db, "users", user.uid, "transactions"),
+      orderBy("createdAt", "desc")
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const txns = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTransactions(txns);
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  function handleLogout() {
+    signOut(auth).then(() => navigate("/"));
+  }
+
+  async function handleAdd(e) {
     e.preventDefault();
-    if (!desc || !amount) return;
-    setTransactions([
-      ...transactions,
-      { id: Date.now(), desc, amount: parseFloat(amount), type },
-    ]);
+    if (!desc || !amount || !user) return;
+    await addDoc(collection(db, "users", user.uid, "transactions"), {
+      desc,
+      amount: parseFloat(amount),
+      type,
+      createdAt: new Date(),
+    });
     setDesc("");
     setAmount("");
   }
@@ -30,9 +58,11 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-b from-[#F5F7FA] to-[#E8F0F2]">
       <nav className="flex justify-between items-center px-10 py-5 bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
         <h1 className="text-2xl font-bold tracking-tight text-[#028090]">Centsible</h1>
-        <Link to="/" className="text-sm font-medium text-gray-500 hover:text-[#028090] transition-colors">
+        <button onClick={handleLogout}
+          className="text-sm font-medium text-gray-500 hover:text-[#028090] transition-colors"
+          style={{ background: "none", border: "none", cursor: "pointer" }}>
           Log out
-        </Link>
+        </button>
       </nav>
 
       <div className="max-w-4xl mx-auto px-8 py-8">
