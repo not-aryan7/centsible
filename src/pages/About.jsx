@@ -31,35 +31,63 @@ export default function About() {
           What is Centsible?
         </h2>
         <p style={{ fontSize: "18px", color: "#777", maxWidth: "560px", margin: "0 auto", lineHeight: 1.7 }}>
-          A budgeting web app built for students who want to take control of their finances.
-          Track spending, set savings goals, and build better money habits — with a gamified
-          experience that keeps you motivated.
+          A gamified budgeting web app built for students who want to take control of their finances.
+          Track spending, set savings goals, earn your Savings Score, and build better money habits.
         </p>
       </section>
 
-      {/* Mission */}
+      {/* Features */}
       <section style={{ padding: "80px 24px", backgroundColor: "white" }}>
+        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+          <h3 style={{ fontSize: "28px", fontWeight: 800, textAlign: "center", marginBottom: "40px" }}>
+            What Can You Do?
+          </h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
+            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "#F8FAFB", border: "1px solid #eee" }}>
+              <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>🏆 Savings Score</h4>
+              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
+                Set a monthly budget and get a score from 0–100 based on how well you stay under it. The higher your score, the better your habits.
+              </p>
+            </div>
+            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "#F8FAFB", border: "1px solid #eee" }}>
+              <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>🎖️ Earn Badges</h4>
+              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
+                Unlock badges like Budget Beginner, Penny Pincher, Budget Pro, and Savings Master as your score improves.
+              </p>
+            </div>
+            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "#F8FAFB", border: "1px solid #eee" }}>
+              <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>💰 Track Transactions</h4>
+              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
+                Log income and expenses with categories like Food, Transport, and Entertainment. All data saves to the cloud.
+              </p>
+            </div>
+            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "#F8FAFB", border: "1px solid #eee" }}>
+              <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>📊 Spending Charts</h4>
+              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
+                See where your money goes with a visual pie chart that breaks down spending by category.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why We Built This */}
+      <section style={{ padding: "80px 24px", background: "#F8FAFB" }}>
         <div style={{ maxWidth: "800px", margin: "0 auto" }}>
           <h3 style={{ fontSize: "28px", fontWeight: 800, textAlign: "center", marginBottom: "40px" }}>
             Why We Built This
           </h3>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-            <div style={{
-              padding: "28px", borderRadius: "16px", backgroundColor: "#F8FAFB",
-              border: "1px solid #eee"
-            }}>
+            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "white", border: "1px solid #eee" }}>
               <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>Students struggle with money</h4>
               <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
                 Most students don't track spending or have a budget. We wanted to make it easy.
               </p>
             </div>
-            <div style={{
-              padding: "28px", borderRadius: "16px", backgroundColor: "#F8FAFB",
-              border: "1px solid #eee"
-            }}>
+            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "white", border: "1px solid #eee" }}>
               <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>Budgeting apps are boring</h4>
               <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
-                Gamification makes saving fun. Earn points, unlock badges, and compete with friends.
+                Gamification makes saving fun. Earn your Savings Score, unlock badges, and see your progress grow.
               </p>
             </div>
           </div>
@@ -79,9 +107,9 @@ export default function About() {
           maxWidth: "700px", margin: "0 auto"
         }}>
           {[
-            { initial: "A", name: "Aryan", role: "Frontend & Setup" },
-            { initial: "D", name: "Dipekshya", role: "Routing & Auth" },
-            { initial: "K", name: "Krish", role: "UI Components" },
+            { initial: "A", name: "Aryan", role: "Full-Stack & Project Lead" },
+            { initial: "D", name: "Dipekshya", role: "Frontend & Auth" },
+            { initial: "K", name: "Krish", role: "UI & Landing Page" },
           ].map((member) => (
             <div key={member.initial} style={{
               backgroundColor: "white", padding: "36px 24px", borderRadius: "20px",
