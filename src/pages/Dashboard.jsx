@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, setDoc, getDoc, updateDoc } from "firebase/firestore";
@@ -184,6 +184,24 @@ export default function Dashboard() {
   const savingsScore = canCalculate ? Math.max(0, Math.min(100, Math.round(budgetAdherence * 0.40 + savingsRate * 0.35 + categoryBalance * 0.25))) : 0;
   const scoreLabel = savingsScore >= 90 ? "Excellent" : savingsScore >= 70 ? "Good" : savingsScore >= 50 ? "Fair" : savingsScore >= 30 ? "Poor" : "Needs Work";
 
+  // Monthly bar chart data from all transactions
+  const monthlyBarData = useMemo(() => {
+    const map = {};
+    transactions.forEach((t) => {
+      const my = getMonthYear(t.createdAt);
+      if (!my) return;
+      const key = `${my.year}-${my.month}`;
+      if (!map[key]) map[key] = { income: 0, expenses: 0 };
+      if (t.type === "income") map[key].income += t.amount;
+      else map[key].expenses += t.amount;
+    });
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, val]) => ({ key, net: val.income - val.expenses }))
+      .slice(-12);
+  }, [transactions]);
+  const maxBarNet = Math.max(...monthlyBarData.map((d) => Math.abs(d.net)), 1);
+
   // SVG gauge calculations
   const gaugeRadius = 52;
   const gaugeCircumference = 2 * Math.PI * gaugeRadius;
@@ -263,8 +281,8 @@ export default function Dashboard() {
           style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.05)" }}
         >
           <div className="relative flex-shrink-0">
-            <div className="w-11 h-11 rounded-xl bg-[#e8603a] flex items-center justify-center text-white text-xl">
-              🤖
+            <div className="w-11 h-11 rounded-xl bg-[#e8603a] flex items-center justify-center text-white">
+              <MaterialIcon name="smart_toy" className="text-xl" fill />
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#22c55e] rounded-full border-2 border-white" />
           </div>
@@ -397,9 +415,18 @@ export default function Dashboard() {
               <p className="text-xl font-black font-headline">${Math.max(0, balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               <p className="text-[10px] text-[#5a6063] mt-0.5">Net Savings</p>
               <div className="mt-3 flex items-end gap-[3px] h-10">
-                {[30, 50, 25, 65, 40, 55, 70, 45, 60, 35, 75, 50].map((h, i) => (
-                  <div key={i} className="flex-1 rounded-sm transition-all" style={{ height: `${h}%`, background: i === 11 ? '#e8603a' : 'rgba(232,96,58,0.15)' }} />
-                ))}
+                {monthlyBarData.length > 0 ? monthlyBarData.map((d) => {
+                  const isSelected = d.key === selectedMonth;
+                  const heightPct = Math.max(8, Math.round((Math.abs(d.net) / maxBarNet) * 100));
+                  return (
+                    <div key={d.key} className="flex-1 rounded-sm transition-all duration-500"
+                      style={{ height: `${heightPct}%`, background: isSelected ? '#e8603a' : d.net >= 0 ? 'rgba(232,96,58,0.25)' : 'rgba(232,96,58,0.1)' }}
+                      title={`${MONTH_NAMES[parseInt(d.key.split("-")[1])]}: $${d.net.toFixed(0)}`}
+                    />
+                  );
+                }) : (
+                  <p className="text-[10px] text-[#adb3b6]">No data yet</p>
+                )}
               </div>
             </div>
           </div>

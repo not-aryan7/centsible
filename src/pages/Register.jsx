@@ -27,18 +27,18 @@ export default function Register() {
   return (
     <div style={{
       minHeight: "100vh", display: "flex", flexDirection: "column",
-      background: "linear-gradient(180deg, #F5F7FA 0%, #E0F2F1 50%, #F5F7FA 100%)"
+      background: "linear-gradient(180deg, #f5f5f7 0%, #fff0e8 50%, #f5f5f7 100%)"
     }}>
       <nav style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         padding: "20px 40px", backgroundColor: "rgba(255,255,255,0.9)",
         backdropFilter: "blur(8px)", boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
       }}>
-        <Link to="/" style={{ fontSize: "24px", fontWeight: 800, color: "#028090", textDecoration: "none", letterSpacing: "-0.5px" }}>
+        <Link to="/" style={{ fontSize: "24px", fontWeight: 800, color: "#e8603a", textDecoration: "none", letterSpacing: "-0.5px" }}>
           Centsible
         </Link>
         <Link to="/login" style={{ fontSize: "14px", color: "#666", textDecoration: "none" }}>
-          Already have an account? <span style={{ color: "#028090", fontWeight: 600 }}>Sign In</span>
+          Already have an account? <span style={{ color: "#e8603a", fontWeight: 600 }}>Sign In</span>
         </Link>
       </nav>
 
@@ -48,7 +48,7 @@ export default function Register() {
           boxShadow: "0 4px 24px rgba(0,0,0,0.06)", width: "100%", maxWidth: "420px",
           border: "1px solid #eee"
         }}>
-          <h2 style={{ fontSize: "28px", fontWeight: 800, textAlign: "center", marginBottom: "8px", color: "#1A1A2E" }}>
+          <h2 style={{ fontSize: "28px", fontWeight: 800, textAlign: "center", marginBottom: "8px", color: "#2e3336" }}>
             Create Account
           </h2>
           <p style={{ fontSize: "14px", color: "#999", textAlign: "center", marginBottom: "32px" }}>
@@ -67,7 +67,7 @@ export default function Register() {
               </label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)}
                 placeholder="Your name" required style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = "#028090"}
+                onFocus={(e) => e.target.style.borderColor = "#e8603a"}
                 onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} />
             </div>
 
@@ -77,7 +77,7 @@ export default function Register() {
               </label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@email.com" required style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = "#028090"}
+                onFocus={(e) => e.target.style.borderColor = "#e8603a"}
                 onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} />
             </div>
 
@@ -87,18 +87,18 @@ export default function Register() {
               </label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••" required style={inputStyle}
-                onFocus={(e) => e.target.style.borderColor = "#028090"}
+                onFocus={(e) => e.target.style.borderColor = "#e8603a"}
                 onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} />
             </div>
 
             <button type="submit" style={{
-              width: "100%", padding: "14px", backgroundColor: "#028090",
+              width: "100%", padding: "14px", backgroundColor: "#e8603a",
               color: "white", border: "none", borderRadius: "12px", fontSize: "15px",
               fontWeight: 700, cursor: "pointer", transition: "background-color 0.2s",
-              boxShadow: "0 4px 16px rgba(2,128,144,0.25)"
+              boxShadow: "0 4px 16px rgba(232,96,58,0.25)"
             }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = "#026f7d"}
-              onMouseLeave={(e) => e.target.style.backgroundColor = "#028090"}
+              onMouseEnter={(e) => e.target.style.backgroundColor = "#c94e2a"}
+              onMouseLeave={(e) => e.target.style.backgroundColor = "#e8603a"}
             >
               Create Account
             </button>
@@ -106,7 +106,7 @@ export default function Register() {
 
           <p style={{ textAlign: "center", fontSize: "13px", color: "#aaa", marginTop: "24px" }}>
             Have an account?{" "}
-            <Link to="/login" style={{ color: "#028090", textDecoration: "none", fontWeight: 600 }}>
+            <Link to="/login" style={{ color: "#e8603a", textDecoration: "none", fontWeight: 600 }}>
               Sign in
             </Link>
           </p>
