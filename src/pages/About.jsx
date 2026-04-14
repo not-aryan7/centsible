@@ -2,91 +2,67 @@ import { Link } from "react-router-dom";
 
 export default function About() {
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "#f5f5f7" }}>
+    <div className="min-h-screen bg-[#f5f5f7]">
       {/* Navbar */}
-      <nav style={{
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-        padding: "20px 40px", backgroundColor: "rgba(255,255,255,0.9)",
-        backdropFilter: "blur(8px)", position: "sticky", top: 0, zIndex: 10,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.06)"
-      }}>
-        <Link to="/" style={{ fontSize: "24px", fontWeight: 800, color: "#e8603a", textDecoration: "none", letterSpacing: "-0.5px" }}>
+      <nav className="flex justify-between items-center px-5 sm:px-10 py-5 bg-white/90 backdrop-blur-md sticky top-0 z-10" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+        <Link to="/" className="text-xl sm:text-2xl font-extrabold text-[#e8603a] no-underline tracking-tight">
           Centsible
         </Link>
-        <Link to="/" style={{ fontSize: "14px", color: "#666", textDecoration: "none", fontWeight: 500 }}>
+        <Link to="/" className="text-sm text-[#666] no-underline font-medium hover:text-[#2e3336] transition-colors">
           ← Back to Home
         </Link>
       </nav>
 
       {/* Hero */}
-      <section style={{
-        padding: "80px 24px 60px", textAlign: "center",
-        background: "linear-gradient(180deg, #f5f5f7 0%, #fff0e8 100%)"
-      }}>
-        <span style={{
-          fontSize: "12px", fontWeight: 700, color: "#e8603a",
-          textTransform: "uppercase", letterSpacing: "3px"
-        }}>About</span>
-        <h2 style={{ fontSize: "42px", fontWeight: 900, marginTop: "16px", marginBottom: "20px", color: "#2e3336" }}>
+      <section className="py-16 sm:py-20 px-6 text-center" style={{ background: "linear-gradient(180deg, #f5f5f7 0%, #fff0e8 100%)" }}>
+        <span className="text-xs font-bold text-[#e8603a] uppercase tracking-[3px]">About</span>
+        <h2 className="text-3xl sm:text-[42px] font-black mt-4 mb-5 text-[#2e3336]">
           What is Centsible?
         </h2>
-        <p style={{ fontSize: "18px", color: "#777", maxWidth: "560px", margin: "0 auto", lineHeight: 1.7 }}>
+        <p className="text-base sm:text-lg text-[#777] max-w-[560px] mx-auto leading-relaxed">
           A gamified budgeting web app built for students who want to take control of their finances.
           Track spending, set savings goals, earn your Savings Score, and build better money habits.
         </p>
       </section>
 
       {/* Features */}
-      <section style={{ padding: "80px 24px", backgroundColor: "white" }}>
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-          <h3 style={{ fontSize: "28px", fontWeight: 800, textAlign: "center", marginBottom: "40px" }}>
+      <section className="py-16 sm:py-20 px-6 bg-white">
+        <div className="max-w-[800px] mx-auto">
+          <h3 className="text-2xl sm:text-[28px] font-extrabold text-center mb-10">
             What Can You Do?
           </h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "#f9f5f3", border: "1px solid #eee" }}>
-              <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>🏆 Savings Score</h4>
-              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
-                Set a monthly budget and get a score from 0–100 based on how well you stay under it. The higher your score, the better your habits.
-              </p>
-            </div>
-            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "#f9f5f3", border: "1px solid #eee" }}>
-              <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>🎖️ Earn Badges</h4>
-              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
-                Unlock badges like Budget Beginner, Penny Pincher, Budget Pro, and Savings Master as your score improves.
-              </p>
-            </div>
-            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "#f9f5f3", border: "1px solid #eee" }}>
-              <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>💰 Track Transactions</h4>
-              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
-                Log income and expenses with categories like Food, Transport, and Entertainment. All data saves to the cloud.
-              </p>
-            </div>
-            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "#f9f5f3", border: "1px solid #eee" }}>
-              <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>📊 Spending Charts</h4>
-              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
-                See where your money goes with a visual pie chart that breaks down spending by category.
-              </p>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {[
+              { icon: "🏆", title: "Savings Score", desc: "Set a monthly budget and get a score from 0–100 based on how well you stay under it. The higher your score, the better your habits." },
+              { icon: "🎖️", title: "Earn Badges", desc: "Unlock badges like Budget Beginner, Penny Pincher, Budget Pro, and Savings Master as your score improves." },
+              { icon: "💰", title: "Track Transactions", desc: "Log income and expenses with categories like Food, Transport, and Entertainment. All data saves to the cloud." },
+              { icon: "📊", title: "Spending Charts", desc: "See where your money goes with a visual pie chart that breaks down spending by category." },
+            ].map((f) => (
+              <div key={f.title} className="p-7 rounded-2xl bg-[#f9f5f3] border border-[#eee]">
+                <h4 className="font-bold text-base mb-2">{f.icon} {f.title}</h4>
+                <p className="text-[#888] text-sm leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Why We Built This */}
-      <section style={{ padding: "80px 24px", background: "#f9f5f3" }}>
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-          <h3 style={{ fontSize: "28px", fontWeight: 800, textAlign: "center", marginBottom: "40px" }}>
+      <section className="py-16 sm:py-20 px-6 bg-[#f9f5f3]">
+        <div className="max-w-[800px] mx-auto">
+          <h3 className="text-2xl sm:text-[28px] font-extrabold text-center mb-10">
             Why We Built This
           </h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "white", border: "1px solid #eee" }}>
-              <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>Students struggle with money</h4>
-              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="p-7 rounded-2xl bg-white border border-[#eee]">
+              <h4 className="font-bold text-base mb-2">Students struggle with money</h4>
+              <p className="text-[#888] text-sm leading-relaxed">
                 Most students don't track spending or have a budget. We wanted to make it easy.
               </p>
             </div>
-            <div style={{ padding: "28px", borderRadius: "16px", backgroundColor: "white", border: "1px solid #eee" }}>
-              <h4 style={{ fontWeight: 700, fontSize: "16px", marginBottom: "8px" }}>Budgeting apps are boring</h4>
-              <p style={{ color: "#888", fontSize: "14px", lineHeight: 1.6 }}>
+            <div className="p-7 rounded-2xl bg-white border border-[#eee]">
+              <h4 className="font-bold text-base mb-2">Budgeting apps are boring</h4>
+              <p className="text-[#888] text-sm leading-relaxed">
                 Gamification makes saving fun. Earn your Savings Score, unlock badges, and see your progress grow.
               </p>
             </div>
@@ -95,47 +71,29 @@ export default function About() {
       </section>
 
       {/* Team */}
-      <section style={{
-        padding: "80px 24px",
-        background: "linear-gradient(180deg, #f5f5f7 0%, #fef3ee 100%)"
-      }}>
-        <h3 style={{ fontSize: "28px", fontWeight: 800, textAlign: "center", marginBottom: "48px" }}>
+      <section className="py-16 sm:py-20 px-6" style={{ background: "linear-gradient(180deg, #f5f5f7 0%, #fef3ee 100%)" }}>
+        <h3 className="text-2xl sm:text-[28px] font-extrabold text-center mb-12">
           Meet the Team
         </h3>
-        <div style={{
-          display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px",
-          maxWidth: "700px", margin: "0 auto"
-        }}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-[700px] mx-auto">
           {[
             { initial: "A", name: "Aryan", role: "Full-Stack & Project Lead" },
             { initial: "D", name: "Dipekshya", role: "Frontend & Auth" },
             { initial: "K", name: "Krish", role: "UI & Landing Page" },
           ].map((member) => (
-            <div key={member.initial} style={{
-              backgroundColor: "white", padding: "36px 24px", borderRadius: "20px",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.04)", border: "1px solid #eee",
-              textAlign: "center"
-            }}>
-              <div style={{
-                width: "56px", height: "56px", borderRadius: "50%",
-                backgroundColor: "rgba(232,96,58,0.08)", display: "flex",
-                alignItems: "center", justifyContent: "center", margin: "0 auto 16px",
-                fontSize: "20px", fontWeight: 700, color: "#e8603a"
-              }}>
+            <div key={member.initial} className="bg-white py-9 px-6 rounded-2xl text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.04)", border: "1px solid #eee" }}>
+              <div className="w-14 h-14 rounded-full bg-[#e8603a]/8 flex items-center justify-center mx-auto mb-4 text-xl font-bold text-[#e8603a]">
                 {member.initial}
               </div>
-              <p style={{ fontWeight: 700, fontSize: "16px", marginBottom: "4px" }}>{member.name}</p>
-              <p style={{ color: "#aaa", fontSize: "13px" }}>{member.role}</p>
+              <p className="font-bold text-base mb-1">{member.name}</p>
+              <p className="text-[#aaa] text-[13px]">{member.role}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Footer */}
-      <footer style={{
-        textAlign: "center", padding: "32px", color: "#aaa", fontSize: "14px",
-        borderTop: "1px solid #e5e5e5", backgroundColor: "white"
-      }}>
+      <footer className="text-center py-8 text-[#aaa] text-sm bg-white" style={{ borderTop: "1px solid #e5e5e5" }}>
         Centsible 2026 — Aryan, Dipekshya & Krish
       </footer>
     </div>

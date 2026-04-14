@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { askCentsiCoach, getAutoInsight } from "../services/gemini";
+import { askCentsiCoach, getAutoInsight } from "../services/ai";
 
 export default function CentsiCoach({ totals, budget, score, transactions, stitch }) {
   const [advice, setAdvice] = useState("");

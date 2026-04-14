@@ -5,7 +5,9 @@ import { collection, addDoc, deleteDoc, doc, query, orderBy, onSnapshot, setDoc,
 import { auth, db } from "../firebase";
 import { format } from "date-fns";
 import CentsiCoach from "../components/CentsiCoach";
-import { getAutoInsight } from "../services/gemini";
+import CategoryChart from "../components/CategoryChart";
+import SavingsGoals from "../components/SavingsGoals";
+import { getAutoInsight } from "../services/ai";
 
 const CATEGORIES = ["Food", "Transport", "Entertainment", "Shopping", "Bills", "Education", "Other"];
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -62,6 +64,30 @@ function MaterialIcon({ name, className = "", fill = false, style = {} }) {
   );
 }
 
+// ─── CSV Export Helper ───
+function downloadCSV(transactions, monthName) {
+  const headers = ["Date", "Description", "Type", "Category", "Amount"];
+  const rows = transactions.map((t) => {
+    const date = t.createdAt?.toDate ? t.createdAt.toDate() : new Date(t.createdAt);
+    return [
+      format(date, "yyyy-MM-dd HH:mm"),
+      `"${t.desc.replace(/"/g, '""')}"`,
+      t.type,
+      t.category || "",
+      t.amount.toFixed(2),
+    ].join(",");
+  });
+
+  const csv = [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `centsible_${monthName.toLowerCase()}_transactions.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function Dashboard() {
   const [transactions, setTransactions] = useState([]);
   const [desc, setDesc] = useState("");
@@ -86,6 +112,20 @@ export default function Dashboard() {
     const now = new Date();
     return `${now.getFullYear()}-${now.getMonth()}`;
   });
+
+  // ─── NEW: Search, Filter, Menu, MonthPicker, AllTransactions state ───
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [filterCategory, setFilterCategory] = useState("All");
+  const [filterType, setFilterType] = useState("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [monthPickerOpen, setMonthPickerOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const [allTxnPage, setAllTxnPage] = useState(1);
+  const TXN_PER_PAGE = 10;
+
+  const searchInputRef = useRef(null);
   const navigate = useNavigate();
   const user = auth.currentUser;
 
@@ -115,12 +155,33 @@ export default function Dashboard() {
       .finally(() => setInsightLoading(false));
   }, []);
 
+  // Focus search when opened
+  useEffect(() => {
+    if (searchOpen) searchInputRef.current?.focus();
+  }, [searchOpen]);
+
   const [selYear, selMonth] = selectedMonth.split("-").map(Number);
 
   const monthlyTransactions = transactions.filter((t) => {
     const my = getMonthYear(t.createdAt);
     return my && my.month === selMonth && my.year === selYear;
   });
+
+  // ─── NEW: Filtered & searched transactions ───
+  const filteredTransactions = useMemo(() => {
+    let txns = monthlyTransactions;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      txns = txns.filter((t) => t.desc.toLowerCase().includes(q));
+    }
+    if (filterCategory !== "All") {
+      txns = txns.filter((t) => t.category === filterCategory);
+    }
+    if (filterType !== "all") {
+      txns = txns.filter((t) => t.type === filterType);
+    }
+    return txns;
+  }, [monthlyTransactions, searchQuery, filterCategory, filterType]);
 
   const availableMonths = [...new Set(transactions.map((t) => {
     const my = getMonthYear(t.createdAt);
@@ -207,18 +268,75 @@ export default function Dashboard() {
   const gaugeCircumference = 2 * Math.PI * gaugeRadius;
   const gaugeDashoffset = gaugeCircumference - (gaugeCircumference * savingsScore) / 100;
 
-  // Recent transactions (last 5)
-  const recentTransactions = monthlyTransactions.slice(0, 5);
+  // Recent transactions (last 5) — using FILTERED list
+  const recentTransactions = filteredTransactions.slice(0, 5);
   const today = new Date();
   const cardShadow = { boxShadow: "0 2px 20px rgba(0,0,0,0.06)" };
+
+  // ─── Paginated all-transactions view ───
+  const totalPages = Math.ceil(filteredTransactions.length / TXN_PER_PAGE);
+  const paginatedTxns = filteredTransactions.slice((allTxnPage - 1) * TXN_PER_PAGE, allTxnPage * TXN_PER_PAGE);
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] font-body text-[#2e3336]">
 
+      {/* ─── Sidebar Menu ─── */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-[60] flex">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
+          <div className="relative w-72 max-w-[80vw] bg-white h-full shadow-2xl flex flex-col animate-slideIn">
+            <div className="p-6 pb-4" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-[#e8603a]/20">
+                  {user?.photoURL ? (
+                    <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-[#e8603a] to-[#c94e2a] flex items-center justify-center text-white font-bold text-lg">
+                      {user?.displayName?.[0] || "U"}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="font-bold text-sm">{user?.displayName || "User"}</p>
+                  <p className="text-[10px] text-[#5a6063]">{user?.email}</p>
+                </div>
+              </div>
+            </div>
+            <nav className="flex-1 p-4 space-y-1">
+              {[
+                { icon: "grid_view", label: "Dashboard", action: () => setMenuOpen(false) },
+                { icon: "account_balance_wallet", label: "Set Budget", action: () => { setEditingBudget(true); setMenuOpen(false); } },
+                { icon: "psychology", label: "AI Coach", action: () => { setShowCoach(true); setMenuOpen(false); } },
+                { icon: "savings", label: "Savings Goals", action: () => { setShowAllTransactions(false); setMenuOpen(false); } },
+                { icon: "info", label: "About", action: () => { navigate("/about"); } },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={item.action}
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-[#2e3336] hover:bg-[#f5f5f7] transition-colors"
+                >
+                  <MaterialIcon name={item.icon} className="text-lg text-[#5a6063]" />
+                  {item.label}
+                </button>
+              ))}
+            </nav>
+            <div className="p-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-[#ac3434] hover:bg-red-50 transition-colors"
+              >
+                <MaterialIcon name="logout" className="text-lg" />
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Header ─── */}
       <header className="sticky top-0 z-50 flex items-center justify-between px-5 lg:px-10 h-16 bg-white/80 backdrop-blur-xl" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
         <div className="flex items-center gap-3">
-          <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#f5f5f7] transition-colors">
+          <button onClick={() => setMenuOpen(true)} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#f5f5f7] transition-colors">
             <MaterialIcon name="menu" className="text-xl" />
           </button>
           <div className="w-10 h-10 bg-[#2e3336] rounded-full flex items-center justify-center text-white font-black text-sm font-headline">C</div>
@@ -246,14 +364,57 @@ export default function Dashboard() {
               <p className="text-[10px] text-[#5a6063]">Student</p>
             </div>
           </div>
-          <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#f5f5f7] transition-colors">
-            <MaterialIcon name="search" className="text-[#5a6063] text-xl" />
+          {/* Search toggle */}
+          <button onClick={() => setSearchOpen(!searchOpen)} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#f5f5f7] transition-colors">
+            <MaterialIcon name={searchOpen ? "close" : "search"} className="text-[#5a6063] text-xl" />
           </button>
-          <div className="hidden lg:flex items-center bg-[#f5f5f7] rounded-full px-4 py-2 text-sm text-[#adb3b6] cursor-text min-w-[180px]">
-            Start searching here ...
-          </div>
+          {/* Search input (expandable) */}
+          {searchOpen ? (
+            <div className="hidden lg:flex items-center bg-[#f5f5f7] rounded-full px-4 py-2 text-sm min-w-[220px] transition-all">
+              <MaterialIcon name="search" className="text-[#adb3b6] text-lg mr-2" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search transactions..."
+                className="bg-transparent outline-none text-sm text-[#2e3336] w-full placeholder:text-[#adb3b6]"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery("")} className="ml-1">
+                  <MaterialIcon name="close" className="text-sm text-[#adb3b6]" />
+                </button>
+              )}
+            </div>
+          ) : (
+            <div onClick={() => setSearchOpen(true)} className="hidden lg:flex items-center bg-[#f5f5f7] rounded-full px-4 py-2 text-sm text-[#adb3b6] cursor-text min-w-[180px]">
+              Start searching here ...
+            </div>
+          )}
         </div>
       </header>
+
+      {/* Mobile search bar */}
+      {searchOpen && (
+        <div className="lg:hidden px-5 py-3 bg-white" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+          <div className="flex items-center bg-[#f5f5f7] rounded-full px-4 py-2.5">
+            <MaterialIcon name="search" className="text-[#adb3b6] text-lg mr-2" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search transactions..."
+              className="bg-transparent outline-none text-sm text-[#2e3336] w-full placeholder:text-[#adb3b6]"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")}>
+                <MaterialIcon name="close" className="text-sm text-[#adb3b6]" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ─── Sub-header ─── */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-5 lg:px-10 py-6 gap-4">
@@ -269,10 +430,35 @@ export default function Dashboard() {
           <button onClick={() => setShowAddForm(true)} className="bg-[#e8603a] text-white pl-6 pr-4 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 hover:opacity-90 transition-opacity" style={{ boxShadow: "0 4px 16px rgba(232,96,58,0.25)" }}>
             Add Transaction <MaterialIcon name="arrow_forward" className="text-base" />
           </button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-full border border-black/10 hover:bg-white transition-colors relative">
-            <MaterialIcon name="calendar_month" className="text-xl text-[#5a6063]" />
-            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#e8603a] rounded-full border-2 border-[#f5f5f7]" />
-          </button>
+          {/* ─── Month Picker Button ─── */}
+          <div className="relative">
+            <button onClick={() => setMonthPickerOpen(!monthPickerOpen)} className="w-10 h-10 flex items-center justify-center rounded-full border border-black/10 hover:bg-white transition-colors relative">
+              <MaterialIcon name="calendar_month" className="text-xl text-[#5a6063]" />
+              <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#e8603a] rounded-full border-2 border-[#f5f5f7]" />
+            </button>
+            {monthPickerOpen && (
+              <div className="absolute top-12 right-0 bg-white rounded-2xl shadow-xl border border-black/6 p-3 z-30 w-56 animate-fadeIn">
+                <p className="text-[10px] font-bold text-[#5a6063] uppercase tracking-wider mb-2 px-2">Select Month</p>
+                <div className="max-h-52 overflow-y-auto space-y-0.5" style={{ scrollbarWidth: "thin" }}>
+                  {availableMonths.map((key) => {
+                    const [y, m] = key.split("-").map(Number);
+                    const isSelected = key === selectedMonth;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => { setSelectedMonth(key); setMonthPickerOpen(false); }}
+                        className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                          isSelected ? "bg-[#e8603a] text-white" : "hover:bg-[#f5f5f7] text-[#2e3336]"
+                        }`}
+                      >
+                        {MONTH_NAMES[m]} {y}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         {/* ─── Inline CentsiCoach Card ─── */}
         <button
@@ -432,40 +618,12 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ─── Bottom Row: Activity & Goals ─── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1fr_2fr_1fr] gap-5">
+        {/* ─── Middle Row: Category Chart + Activity Manager ─── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1fr_2fr_1fr] gap-5 mb-5">
 
-          {/* Achievements (bubble style) */}
+          {/* Category Chart */}
           <div className="bg-white rounded-3xl p-7" style={cardShadow}>
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="font-bold font-headline">Achievements</h3>
-              <button className="text-[#e8603a] text-[10px] font-bold uppercase tracking-wider hover:underline">View All</button>
-            </div>
-            <div className="relative h-52">
-              {BADGES.map((badge, i) => {
-                const earned = badge.condition(monthlyBudget, savingsScore);
-                const configs = [
-                  { size: 110, left: 0,   top: 80,  opacity: 0.25 },
-                  { size: 90,  left: 95,  top: 20,  opacity: 0.2  },
-                  { size: 70,  left: 30,  top: 10,  opacity: 0.15 },
-                  { size: 58,  left: 140, top: 115, opacity: 0.12 },
-                ];
-                const c = configs[i];
-                return (
-                  <div key={badge.name} className="absolute rounded-full flex flex-col items-center justify-center text-center cursor-pointer group transition-transform hover:scale-105"
-                    style={{ width: c.size, height: c.size, left: c.left, top: c.top, background: earned ? undefined : `rgba(0,0,0,${c.opacity * 0.3})` }}
-                  >
-                    {earned && <div className="absolute inset-0 rounded-full" style={{ background: `rgba(0,0,0,0.04)` }} />}
-                    <div className={`absolute inset-0 rounded-full ${earned ? badge.bgColor + "/25" : ""}`} />
-                    <div className="relative z-10 flex flex-col items-center">
-                      <MaterialIcon name={badge.icon} className={`text-lg mb-0.5 ${earned ? badge.textColor : "text-[#5a6063]/40"}`} fill={earned} />
-                      <p className={`text-[9px] font-bold leading-tight ${earned ? "" : "text-[#5a6063]/60"}`}>{badge.name}</p>
-                      <p className="text-[7px] text-[#5a6063]/60">{badge.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <CategoryChart transactions={monthlyTransactions} />
           </div>
 
           {/* Activity Manager */}
@@ -473,20 +631,110 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-bold font-headline">Activity Manager</h3>
               <div className="flex items-center gap-1.5">
-                <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]">
-                  <MaterialIcon name="more_vert" className="text-[#5a6063] text-lg" />
+                {/* CSV Export */}
+                <button
+                  onClick={() => downloadCSV(monthlyTransactions, MONTH_NAMES[selMonth])}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7] transition-colors"
+                  title="Export CSV"
+                >
+                  <MaterialIcon name="download" className="text-[#5a6063] text-lg" />
                 </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]">
-                  <MaterialIcon name="tune" className="text-[#5a6063] text-lg" />
+                <button
+                  onClick={() => { setShowAllTransactions(true); setAllTxnPage(1); }}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]"
+                  title="View all"
+                >
+                  <MaterialIcon name="open_in_full" className="text-[#5a6063] text-lg" />
                 </button>
-                <button className="flex items-center gap-1 text-[10px] text-[#5a6063] font-medium bg-[#f5f5f7] px-3 py-1.5 rounded-full hover:bg-[#eef0f3]">
-                  <MaterialIcon name="filter_list" className="text-sm" /> Filters
-                </button>
+                {/* Filters toggle */}
+                <div className="relative">
+                  <button
+                    onClick={() => setFiltersOpen(!filtersOpen)}
+                    className={`flex items-center gap-1 text-[10px] font-medium px-3 py-1.5 rounded-full transition-colors ${
+                      filtersOpen || filterCategory !== "All" || filterType !== "all"
+                        ? "bg-[#e8603a] text-white"
+                        : "bg-[#f5f5f7] text-[#5a6063] hover:bg-[#eef0f3]"
+                    }`}
+                  >
+                    <MaterialIcon name="filter_list" className="text-sm" /> Filters
+                  </button>
+                  {filtersOpen && (
+                    <div className="absolute top-9 right-0 bg-white rounded-2xl shadow-xl border border-black/6 p-4 z-30 w-56 animate-fadeIn">
+                      <p className="text-[10px] font-bold text-[#5a6063] uppercase tracking-wider mb-2">Type</p>
+                      <div className="flex gap-1.5 mb-3">
+                        {[
+                          { value: "all", label: "All" },
+                          { value: "income", label: "Income" },
+                          { value: "expense", label: "Expense" },
+                        ].map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setFilterType(opt.value)}
+                            className={`px-3 py-1.5 rounded-full text-[10px] font-medium transition-colors ${
+                              filterType === opt.value ? "bg-[#e8603a] text-white" : "bg-[#f5f5f7] text-[#5a6063] hover:bg-[#eef0f3]"
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[10px] font-bold text-[#5a6063] uppercase tracking-wider mb-2">Category</p>
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {["All", ...CATEGORIES].map((cat) => (
+                          <button
+                            key={cat}
+                            onClick={() => setFilterCategory(cat)}
+                            className={`px-3 py-1.5 rounded-full text-[10px] font-medium transition-colors ${
+                              filterCategory === cat ? "bg-[#e8603a] text-white" : "bg-[#f5f5f7] text-[#5a6063] hover:bg-[#eef0f3]"
+                            }`}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => { setFilterCategory("All"); setFilterType("all"); setFiltersOpen(false); }}
+                        className="w-full text-center text-[10px] text-[#e8603a] font-bold hover:underline"
+                      >
+                        Clear Filters
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+
+            {/* Active filter pills */}
+            {(filterCategory !== "All" || filterType !== "all" || searchQuery) && (
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {searchQuery && (
+                  <span className="flex items-center gap-1 text-[10px] bg-[#e8603a]/10 text-[#e8603a] px-2.5 py-1 rounded-full font-medium">
+                    Search: "{searchQuery}"
+                    <button onClick={() => setSearchQuery("")}><MaterialIcon name="close" className="text-[10px]" /></button>
+                  </span>
+                )}
+                {filterType !== "all" && (
+                  <span className="flex items-center gap-1 text-[10px] bg-[#e8603a]/10 text-[#e8603a] px-2.5 py-1 rounded-full font-medium">
+                    {filterType === "income" ? "Income" : "Expenses"}
+                    <button onClick={() => setFilterType("all")}><MaterialIcon name="close" className="text-[10px]" /></button>
+                  </span>
+                )}
+                {filterCategory !== "All" && (
+                  <span className="flex items-center gap-1 text-[10px] bg-[#e8603a]/10 text-[#e8603a] px-2.5 py-1 rounded-full font-medium">
+                    {filterCategory}
+                    <button onClick={() => setFilterCategory("All")}><MaterialIcon name="close" className="text-[10px]" /></button>
+                  </span>
+                )}
+              </div>
+            )}
+
             <div className="space-y-4">
               {recentTransactions.length === 0 ? (
-                <p className="text-center text-[#5a6063] text-sm py-12">No transactions yet this month.</p>
+                <p className="text-center text-[#5a6063] text-sm py-12">
+                  {searchQuery || filterCategory !== "All" || filterType !== "all"
+                    ? "No transactions match your filters."
+                    : "No transactions yet this month."}
+                </p>
               ) : (
                 recentTransactions.map((t) => (
                   <div key={t.id} className="flex items-center justify-between group">
@@ -512,6 +760,14 @@ export default function Dashboard() {
                 ))
               )}
             </div>
+            {filteredTransactions.length > 5 && (
+              <button
+                onClick={() => { setShowAllTransactions(true); setAllTxnPage(1); }}
+                className="w-full mt-4 text-center text-xs text-[#e8603a] font-bold hover:underline"
+              >
+                View all {filteredTransactions.length} transactions →
+              </button>
+            )}
           </div>
 
           {/* North Star + AI Review stacked */}
@@ -561,6 +817,47 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ─── Bottom Row: Achievements + Savings Goals ─── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+          {/* Achievements (bubble style) */}
+          <div className="bg-white rounded-3xl p-7" style={cardShadow}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-bold font-headline">Achievements</h3>
+              <button className="text-[#e8603a] text-[10px] font-bold uppercase tracking-wider hover:underline">View All</button>
+            </div>
+            <div className="relative h-52">
+              {BADGES.map((badge, i) => {
+                const earned = badge.condition(monthlyBudget, savingsScore);
+                const configs = [
+                  { size: 110, left: 0,   top: 80,  opacity: 0.25 },
+                  { size: 90,  left: 95,  top: 20,  opacity: 0.2  },
+                  { size: 70,  left: 30,  top: 10,  opacity: 0.15 },
+                  { size: 58,  left: 140, top: 115, opacity: 0.12 },
+                ];
+                const c = configs[i];
+                return (
+                  <div key={badge.name} className="absolute rounded-full flex flex-col items-center justify-center text-center cursor-pointer group transition-transform hover:scale-105"
+                    style={{ width: c.size, height: c.size, left: c.left, top: c.top, background: earned ? undefined : `rgba(0,0,0,${c.opacity * 0.3})` }}
+                  >
+                    {earned && <div className="absolute inset-0 rounded-full" style={{ background: `rgba(0,0,0,0.04)` }} />}
+                    <div className={`absolute inset-0 rounded-full ${earned ? badge.bgColor + "/25" : ""}`} />
+                    <div className="relative z-10 flex flex-col items-center">
+                      <MaterialIcon name={badge.icon} className={`text-lg mb-0.5 ${earned ? badge.textColor : "text-[#5a6063]/40"}`} fill={earned} />
+                      <p className={`text-[9px] font-bold leading-tight ${earned ? "" : "text-[#5a6063]/60"}`}>{badge.name}</p>
+                      <p className="text-[7px] text-[#5a6063]/60">{badge.desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Savings Goals */}
+          <div className="bg-white rounded-3xl p-7" style={cardShadow}>
+            <SavingsGoals />
+          </div>
+        </div>
+
         {/* ─── CentsiCoach Section ─── */}
         <div className="mt-5 bg-white rounded-3xl p-8 lg:p-10" style={cardShadow}>
           <CentsiCoach
@@ -577,6 +874,9 @@ export default function Dashboard() {
       <div className="hidden xl:flex flex-col gap-4 fixed left-4 top-1/2 -translate-y-1/2 z-30">
         <button onClick={() => setShowAddForm(true)} className="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:scale-110 transition-transform" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.1)" }}>
           <MaterialIcon name="add" className="text-lg" />
+        </button>
+        <button onClick={() => downloadCSV(monthlyTransactions, MONTH_NAMES[selMonth])} className="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:scale-110 transition-transform" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.1)" }} title="Export CSV">
+          <MaterialIcon name="download" className="text-lg text-[#5a6063]" />
         </button>
         <button onClick={handleLogout} className="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:scale-110 transition-transform" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.1)" }}>
           <MaterialIcon name="logout" className="text-lg text-[#5a6063]" />
@@ -597,7 +897,7 @@ export default function Dashboard() {
               <input type="text" placeholder="What did you spend on?" value={desc} onChange={(e) => setDesc(e.target.value)}
                 className="w-full bg-[#f5f5f7] rounded-2xl px-5 py-4 text-sm font-medium focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#e8603a]/20 transition-all" required />
               <div className="grid grid-cols-2 gap-4">
-                <input type="number" step="0.01" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)}
+                <input type="number" step="0.01" min="0.01" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)}
                   className="bg-[#f5f5f7] rounded-2xl px-5 py-4 text-sm font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#e8603a]/20 transition-all" required />
                 <select value={type} onChange={(e) => setType(e.target.value)}
                   className="bg-[#f5f5f7] rounded-2xl px-5 py-4 text-sm font-medium focus:outline-none appearance-none cursor-pointer">
@@ -628,7 +928,7 @@ export default function Dashboard() {
               <input type="text" value={editDesc} onChange={(e) => setEditDesc(e.target.value)}
                 className="w-full bg-[#f5f5f7] rounded-2xl px-5 py-4 text-sm font-medium focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#e8603a]/20" required />
               <div className="grid grid-cols-2 gap-4">
-                <input type="number" step="0.01" value={editAmount} onChange={(e) => setEditAmount(e.target.value)}
+                <input type="number" step="0.01" min="0.01" value={editAmount} onChange={(e) => setEditAmount(e.target.value)}
                   className="bg-[#f5f5f7] rounded-2xl px-5 py-4 text-sm font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#e8603a]/20" required />
                 <select value={editType} onChange={(e) => setEditType(e.target.value)}
                   className="bg-[#f5f5f7] rounded-2xl px-5 py-4 text-sm font-medium focus:outline-none appearance-none cursor-pointer">
@@ -647,6 +947,89 @@ export default function Dashboard() {
                 <button type="button" onClick={() => setEditingTxn(null)} className="flex-1 py-4 bg-[#f5f5f7] text-[#5a6063] rounded-full font-semibold hover:bg-[#eef0f3]">Cancel</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── All Transactions Modal (paginated) ─── */}
+      {showAllTransactions && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowAllTransactions(false)}>
+          <div className="bg-white w-full max-w-2xl max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-7 py-5 flex-shrink-0" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+              <div>
+                <h3 className="text-lg font-bold font-headline">All Transactions</h3>
+                <p className="text-[10px] text-[#5a6063] mt-0.5">{filteredTransactions.length} transactions • {MONTH_NAMES[selMonth]}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => downloadCSV(filteredTransactions, MONTH_NAMES[selMonth])}
+                  className="flex items-center gap-1 text-[10px] text-[#e8603a] font-bold bg-[#e8603a]/10 px-3 py-1.5 rounded-full hover:bg-[#e8603a]/20 transition-colors"
+                >
+                  <MaterialIcon name="download" className="text-sm" /> Export CSV
+                </button>
+                <button onClick={() => setShowAllTransactions(false)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]">
+                  <MaterialIcon name="close" className="text-[#5a6063]" />
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-7 space-y-3" style={{ scrollbarWidth: "thin" }}>
+              {paginatedTxns.length === 0 ? (
+                <p className="text-center text-[#5a6063] text-sm py-8">No transactions found.</p>
+              ) : (
+                paginatedTxns.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between group py-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-[#f5f5f7] rounded-full flex items-center justify-center flex-shrink-0">
+                        <MaterialIcon name={CATEGORY_MATERIAL_ICONS[t.type === "income" ? "Income" : t.category] || "more_horiz"} className="text-lg text-[#5a6063]" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold">{t.desc}</p>
+                        <p className="text-[10px] text-[#5a6063]">{formatDate(t.createdAt)} • {t.category}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm font-bold ${t.type === "income" ? "text-[#006d50]" : "text-[#e8603a]"}`}>
+                        {t.type === "income" ? "+" : "-"}${t.amount.toFixed(2)}
+                      </p>
+                      <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => { startEdit(t); setShowAllTransactions(false); }} className="p-1 text-[#5a6063] hover:text-[#e8603a] rounded"><MaterialIcon name="edit" className="text-sm" /></button>
+                        <button onClick={() => handleDelete(t.id)} className="p-1 text-[#5a6063] hover:text-[#ac3434] rounded"><MaterialIcon name="delete" className="text-sm" /></button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 px-7 py-4 flex-shrink-0" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                <button
+                  onClick={() => setAllTxnPage((p) => Math.max(1, p - 1))}
+                  disabled={allTxnPage === 1}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7] disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <MaterialIcon name="chevron_left" className="text-lg" />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setAllTxnPage(page)}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                      page === allTxnPage ? "bg-[#e8603a] text-white" : "hover:bg-[#f5f5f7] text-[#5a6063]"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setAllTxnPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={allTxnPage === totalPages}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7] disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <MaterialIcon name="chevron_right" className="text-lg" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
