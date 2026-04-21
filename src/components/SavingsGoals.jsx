@@ -1,17 +1,7 @@
 import { useState, useEffect } from "react";
 import { collection, addDoc, deleteDoc, updateDoc, doc, query, orderBy, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../firebase";
-
-function MaterialIcon({ name, className = "", fill = false, style = {} }) {
-  return (
-    <span
-      className={`material-symbols-outlined ${className}`}
-      style={{ fontVariationSettings: fill ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 400", ...style }}
-    >
-      {name}
-    </span>
-  );
-}
+import { MaterialIcon } from "../utils/dashboardUtils";
 
 export default function SavingsGoals() {
   const [goals, setGoals] = useState([]);
