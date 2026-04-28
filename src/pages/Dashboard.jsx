@@ -18,6 +18,8 @@ import SavingsGoals from "../components/SavingsGoals";
 import CentsiCoach from "../components/CentsiCoach";
 import MobileBottomNav from "../components/MobileBottomNav";
 import MonthlySummary from "../components/MonthlySummary";
+import SpendingForecast from "../components/SpendingForecast";
+import ReceiptScanner from "../components/ReceiptScanner";
 import { AddTransactionModal, EditTransactionModal, AllTransactionsModal } from "../components/TransactionModals";
 
 export default function Dashboard() {
@@ -44,6 +46,8 @@ export default function Dashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const [showMonthlySummary, setShowMonthlySummary] = useState(false);
+  const [showReceiptScanner, setShowReceiptScanner] = useState(false);
+  const [receiptPrefill, setReceiptPrefill] = useState(null);
 
   const navigate = useNavigate();
   const user = auth.currentUser;
@@ -361,12 +365,18 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ─── Bottom Row: Achievements + Savings Goals ─── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+        {/* ─── Bottom Row: Achievements + Savings Goals + Spending Forecast ─── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-5">
           <AchievementBadges monthlyBudget={monthlyBudget} savingsScore={savingsScore} />
           <div className="bg-white rounded-3xl p-7" style={{ boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}>
             <SavingsGoals />
           </div>
+          <SpendingForecast
+            monthlyTransactions={monthlyTransactions}
+            monthlyBudget={monthlyBudget}
+            selectedMonth={selectedMonth}
+            allTransactions={transactions}
+          />
         </div>
 
         {/* ─── CentsiCoach Section ─── */}
@@ -395,8 +405,23 @@ export default function Dashboard() {
       </div>
 
       {/* ─── Modals ─── */}
-      <AddTransactionModal open={showAddForm} onClose={() => setShowAddForm(false)} onAdd={handleAdd} />
+      <AddTransactionModal
+        open={showAddForm}
+        onClose={() => { setShowAddForm(false); setReceiptPrefill(null); }}
+        onAdd={handleAdd}
+        prefill={receiptPrefill}
+        onScanReceipt={() => setShowReceiptScanner(true)}
+      />
       <EditTransactionModal transaction={editingTxn} onClose={() => setEditingTxn(null)} onSave={handleSaveEdit} />
+      <ReceiptScanner
+        open={showReceiptScanner}
+        onClose={() => setShowReceiptScanner(false)}
+        onScanned={(data) => {
+          setReceiptPrefill(data);
+          setShowReceiptScanner(false);
+          setShowAddForm(true);
+        }}
+      />
       <AllTransactionsModal
         open={showAllTransactions}
         onClose={() => setShowAllTransactions(false)}

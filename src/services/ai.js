@@ -40,3 +40,41 @@ export async function getAutoInsight(financialContext) {
   const data = await res.json();
   return data.reply;
 }
+
+/**
+ * Get AI-generated spending forecast warning
+ */
+export async function getSpendingForecast(forecastContext) {
+  const res = await fetch("/api/coach/forecast", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ forecastContext }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Unknown error" }));
+    throw new Error(err.error || "Failed to get forecast");
+  }
+
+  const data = await res.json();
+  return data.reply;
+}
+
+/**
+ * Scan a receipt image using Gemini Vision
+ */
+export async function scanReceipt(imageBase64) {
+  const res = await fetch("/api/receipt/scan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image: imageBase64 }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Unknown error" }));
+    throw new Error(err.error || "Failed to scan receipt");
+  }
+
+  const data = await res.json();
+  return data.result;
+}

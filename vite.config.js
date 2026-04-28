@@ -153,6 +153,132 @@ Recent transactions: ${fc.recentTransactions || 'none yet'}`
               res.end(JSON.stringify({ error: 'Failed to get insight.' }))
             }
           })
+
+          // Spending Forecast endpoint
+          server.middlewares.use('/api/coach/forecast', async (req, res) => {
+            if (req.method !== 'POST') {
+              res.statusCode = 405
+              return res.end(JSON.stringify({ error: 'Method not allowed' }))
+            }
+
+            try {
+              const { forecastContext } = await parseBody(req)
+              const apiKey = env.ANTHROPIC_API_KEY || env.VITE_ANTHROPIC_API_KEY
+              if (!apiKey) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                return res.end(JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured in .env' }))
+              }
+
+              const { default: Anthropic } = await import('@anthropic-ai/sdk')
+              const client = new Anthropic({ apiKey })
+
+              const fc = forecastContext || {}
+              const prompt = `Based on this student's spending projections for the rest of the month, give ONE short, actionable warning or tip (2 sentences max). Be specific about which category is at risk and what they should do. Be encouraging but direct.
+
+Monthly Budget: $${fc.budget || 'not set'}
+Category Projections: ${fc.projections || 'none'}`
+
+              const response = await client.messages.create({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 100,
+                system: SYSTEM_PROMPT,
+                messages: [{ role: 'user', content: prompt }],
+              })
+
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ reply: response.content[0].text }))
+            } catch (error) {
+              console.error('CentsiCoach forecast error:', error)
+              res.statusCode = 500
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ error: 'Failed to get forecast.' }))
+            }
+          })
+
+          // Receipt Scanner endpoint (Gemini Vision)
+          server.middlewares.use('/api/receipt/scan', async (req, res) => {
+            if (req.method !== 'POST') {
+              res.statusCode = 405
+              return res.end(JSON.stringify({ error: 'Method not allowed' }))
+            }
+
+            try {
+              const { image } = await parseBody(req)
+              if (!image) {
+                res.statusCode = 400
+                res.setHeader('Content-Type', 'application/json')
+                return res.end(JSON.stringify({ error: 'No image provided' }))
+              }
+
+              const geminiKey = env.VITE_GEMINI_API_KEY
+              if (!geminiKey) {
+                res.statusCode = 500
+                res.setHeader('Content-Type', 'application/json')
+                return res.end(JSON.stringify({ error: 'VITE_GEMINI_API_KEY not configured in .env' }))
+              }
+
+              const { GoogleGenAI } = await import('@google/genai')
+              const ai = new GoogleGenAI({ apiKey: geminiKey })
+
+              const response = await ai.models.generateContent({
+                model: 'gemini-2.0-flash',
+                contents: [
+                  {
+                    role: 'user',
+                    parts: [
+                      {
+                        inlineData: {
+                          mimeType: 'image/jpeg',
+                          data: image,
+                        },
+                      },
+                      {
+                        text: `Analyze this receipt image and extract the following information. Return ONLY a valid JSON object with these fields:
+- "merchant": the store/restaurant name (string)
+- "amount": the total amount paid as a number (not a string), just the number without $ sign
+- "date": the date on the receipt in YYYY-MM-DD format (string), or null if not visible
+- "category": suggest ONE category from this list that best fits: Food, Transport, Entertainment, Shopping, Bills, Education, Other
+
+Example response:
+{"merchant": "Chipotle", "amount": 12.50, "date": "2026-04-28", "category": "Food"}
+
+Return ONLY the JSON object, no markdown, no explanation.`,
+                      },
+                    ],
+                  },
+                ],
+              })
+
+              // Use the SDK's text getter
+              const text = response.text || ''
+              console.log('Gemini receipt response:', text)
+
+              // Parse JSON from response (handle possible markdown wrapping)
+              const jsonMatch = text.match(/\{[\s\S]*\}/)
+              if (!jsonMatch) {
+                console.error('No JSON found in Gemini response:', text)
+                res.statusCode = 422
+                res.setHeader('Content-Type', 'application/json')
+                return res.end(JSON.stringify({ error: 'Could not read receipt. Try a clearer photo.' }))
+              }
+
+              const result = JSON.parse(jsonMatch[0])
+              console.log('Parsed receipt data:', result)
+
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ result }))
+            } catch (error) {
+              console.error('Receipt scan error:', error.message || error)
+              const statusCode = error.status === 429 ? 429 : 500
+              const errorMsg = error.status === 429
+                ? 'AI is rate limited. Please wait a moment and try again.'
+                : 'Failed to scan receipt. Try again.'
+              res.statusCode = statusCode
+              res.setHeader('Content-Type', 'application/json')
+              res.end(JSON.stringify({ error: errorMsg }))
+            }
+          })
         }
       }
     ],

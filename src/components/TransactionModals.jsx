@@ -3,11 +3,26 @@ import { MaterialIcon, CATEGORIES, CATEGORY_MATERIAL_ICONS, formatDate, download
 
 // ─── Add Transaction Modal ───
 
-export function AddTransactionModal({ open, onClose, onAdd }) {
+export function AddTransactionModal({ open, onClose, onAdd, prefill, onScanReceipt }) {
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("expense");
   const [category, setCategory] = useState("Food");
+  const [prefillApplied, setPrefillApplied] = useState(false);
+
+  // Apply prefill data when it changes
+  if (prefill && !prefillApplied) {
+    if (prefill.desc) setDesc(prefill.desc);
+    if (prefill.amount) setAmount(prefill.amount);
+    if (prefill.category) setCategory(prefill.category);
+    setType("expense");
+    setPrefillApplied(true);
+  }
+
+  // Reset prefillApplied when modal closes
+  if (!open && prefillApplied) {
+    setPrefillApplied(false);
+  }
 
   if (!open) return null;
 
@@ -17,6 +32,7 @@ export function AddTransactionModal({ open, onClose, onAdd }) {
     onAdd({ desc, amount: parseFloat(amount), type, category: type === "expense" ? category : "Income" });
     setDesc("");
     setAmount("");
+    setPrefillApplied(false);
   }
 
   return (
@@ -28,6 +44,27 @@ export function AddTransactionModal({ open, onClose, onAdd }) {
             <MaterialIcon name="close" className="text-[#5a6063]" />
           </button>
         </div>
+
+        {/* Scan Receipt Button */}
+        {onScanReceipt && (
+          <button
+            type="button"
+            onClick={() => { onClose(); onScanReceipt(); }}
+            className="w-full flex items-center justify-center gap-2 py-3 mb-5 bg-gradient-to-r from-[#e8603a]/10 to-[#f59e0b]/10 rounded-2xl text-sm font-semibold text-[#e8603a] hover:from-[#e8603a]/15 hover:to-[#f59e0b]/15 transition-all border border-[#e8603a]/10"
+          >
+            <MaterialIcon name="document_scanner" className="text-lg" />
+            Scan Receipt with AI
+          </button>
+        )}
+
+        {/* Prefill indicator */}
+        {prefill && (
+          <div className="flex items-center gap-2 bg-[#10b981]/10 text-[#006d50] rounded-xl px-3 py-2 mb-4">
+            <MaterialIcon name="check_circle" className="text-sm" fill />
+            <p className="text-[10px] font-bold">Auto-filled from receipt scan</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <input type="text" placeholder="What did you spend on?" value={desc} onChange={(e) => setDesc(e.target.value)}
             className="w-full bg-[#f5f5f7] rounded-2xl px-5 py-4 text-sm font-medium focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#e8603a]/20 transition-all" required />
