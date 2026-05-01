@@ -211,29 +211,33 @@ Category Projections: ${fc.projections || 'none'}`
                 return res.end(JSON.stringify({ error: 'No image provided' }))
               }
 
-              const geminiKey = env.VITE_GEMINI_API_KEY
-              if (!geminiKey) {
+              const anthropicKey = env.ANTHROPIC_API_KEY
+              if (!anthropicKey) {
                 res.statusCode = 500
                 res.setHeader('Content-Type', 'application/json')
-                return res.end(JSON.stringify({ error: 'VITE_GEMINI_API_KEY not configured in .env' }))
+                return res.end(JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured in .env' }))
               }
 
-              const { GoogleGenAI } = await import('@google/genai')
-              const ai = new GoogleGenAI({ apiKey: geminiKey })
+              const Anthropic = (await import('@anthropic-ai/sdk')).default
+              const client = new Anthropic({ apiKey: anthropicKey })
 
-              const response = await ai.models.generateContent({
-                model: 'gemini-2.0-flash',
-                contents: [
+              const response = await client.messages.create({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 256,
+                messages: [
                   {
                     role: 'user',
-                    parts: [
+                    content: [
                       {
-                        inlineData: {
-                          mimeType: 'image/jpeg',
+                        type: 'image',
+                        source: {
+                          type: 'base64',
+                          media_type: 'image/jpeg',
                           data: image,
                         },
                       },
                       {
+                        type: 'text',
                         text: `Analyze this receipt image and extract the following information. Return ONLY a valid JSON object with these fields:
 - "merchant": the store/restaurant name (string)
 - "amount": the total amount paid as a number (not a string), just the number without $ sign
@@ -250,14 +254,13 @@ Return ONLY the JSON object, no markdown, no explanation.`,
                 ],
               })
 
-              // Use the SDK's text getter
-              const text = response.text || ''
-              console.log('Gemini receipt response:', text)
+              const text = response.content?.[0]?.text || ''
+              console.log('Claude receipt response:', text)
 
               // Parse JSON from response (handle possible markdown wrapping)
               const jsonMatch = text.match(/\{[\s\S]*\}/)
               if (!jsonMatch) {
-                console.error('No JSON found in Gemini response:', text)
+                console.error('No JSON found in Claude response:', text)
                 res.statusCode = 422
                 res.setHeader('Content-Type', 'application/json')
                 return res.end(JSON.stringify({ error: 'Could not read receipt. Try a clearer photo.' }))
@@ -270,13 +273,9 @@ Return ONLY the JSON object, no markdown, no explanation.`,
               res.end(JSON.stringify({ result }))
             } catch (error) {
               console.error('Receipt scan error:', error.message || error)
-              const statusCode = error.status === 429 ? 429 : 500
-              const errorMsg = error.status === 429
-                ? 'AI is rate limited. Please wait a moment and try again.'
-                : 'Failed to scan receipt. Try again.'
-              res.statusCode = statusCode
+              res.statusCode = 500
               res.setHeader('Content-Type', 'application/json')
-              res.end(JSON.stringify({ error: errorMsg }))
+              res.end(JSON.stringify({ error: 'Failed to scan receipt. Try again.' }))
             }
           })
         }

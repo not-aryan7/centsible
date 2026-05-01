@@ -416,10 +416,15 @@ export default function Dashboard() {
       <ReceiptScanner
         open={showReceiptScanner}
         onClose={() => setShowReceiptScanner(false)}
-        onScanned={(data) => {
-          setReceiptPrefill(data);
+        onScanned={async (data) => {
+          // Save directly to Firestore
+          await handleAdd({
+            desc: data.desc,
+            amount: parseFloat(data.amount),
+            type: 'expense',
+            category: data.category || 'Other',
+          });
           setShowReceiptScanner(false);
-          setShowAddForm(true);
         }}
       />
       <AllTransactionsModal
