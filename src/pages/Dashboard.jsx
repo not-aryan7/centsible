@@ -424,6 +424,9 @@ export default function Dashboard() {
             type: 'expense',
             category: data.category || 'Other',
           });
+          // Switch to current month so the new transaction is visible
+          const now = new Date();
+          setSelectedMonth(`${now.getFullYear()}-${now.getMonth()}`);
           setShowReceiptScanner(false);
         }}
       />

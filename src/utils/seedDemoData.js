@@ -58,6 +58,34 @@ export async function seedDemoData(uid) {
     { desc: "Gym membership",   amount: 30,   type: "expense",  category: "Bills",          createdAt: d(2026, 2, 24) },
     { desc: "Amazon Prime",     amount: 139,  type: "expense",  category: "Shopping",       createdAt: d(2026, 2, 26) },
     { desc: "Phone Bill",       amount: 45,   type: "expense",  category: "Bills",          createdAt: d(2026, 2, 29) },
+
+    // ── April 2026 ──
+    { desc: "Monthly Salary",   amount: 3500, type: "income",   category: "Income",         createdAt: d(2026, 3, 1) },
+    { desc: "Rent",             amount: 900,  type: "expense",  category: "Bills",          createdAt: d(2026, 3, 2) },
+    { desc: "Grocery Run",      amount: 78,   type: "expense",  category: "Food",           createdAt: d(2026, 3, 4) },
+    { desc: "Electricity Bill", amount: 60,   type: "expense",  category: "Bills",          createdAt: d(2026, 3, 7) },
+    { desc: "Uber rides",       amount: 35,   type: "expense",  category: "Transport",      createdAt: d(2026, 3, 9) },
+    { desc: "Netflix",          amount: 18,   type: "expense",  category: "Entertainment",  createdAt: d(2026, 3, 10) },
+    { desc: "Chipotle",         amount: 16,   type: "expense",  category: "Food",           createdAt: d(2026, 3, 13) },
+    { desc: "New headphones",   amount: 55,   type: "expense",  category: "Shopping",       createdAt: d(2026, 3, 15) },
+    { desc: "Campus Bus Pass",  amount: 40,   type: "expense",  category: "Transport",      createdAt: d(2026, 3, 17) },
+    { desc: "Freelance work",   amount: 500,  type: "income",   category: "Income",         createdAt: d(2026, 3, 19) },
+    { desc: "Trader Joe's",     amount: 72,   type: "expense",  category: "Food",           createdAt: d(2026, 3, 21) },
+    { desc: "Phone Bill",       amount: 45,   type: "expense",  category: "Bills",          createdAt: d(2026, 3, 25) },
+    { desc: "Study materials",  amount: 38,   type: "expense",  category: "Education",      createdAt: d(2026, 3, 27) },
+
+    // ── May 2026 ──
+    { desc: "Monthly Salary",   amount: 3500, type: "income",   category: "Income",         createdAt: d(2026, 4, 1) },
+    { desc: "Rent",             amount: 900,  type: "expense",  category: "Bills",          createdAt: d(2026, 4, 2) },
+    { desc: "Whole Foods",      amount: 95,   type: "expense",  category: "Food",           createdAt: d(2026, 4, 3) },
+    { desc: "Electricity Bill", amount: 55,   type: "expense",  category: "Bills",          createdAt: d(2026, 4, 5) },
+    { desc: "Uber to campus",   amount: 18,   type: "expense",  category: "Transport",      createdAt: d(2026, 4, 6) },
+    { desc: "Spotify",          amount: 11,   type: "expense",  category: "Entertainment",  createdAt: d(2026, 4, 7) },
+    { desc: "Chipotle + coffee",amount: 22,   type: "expense",  category: "Food",           createdAt: d(2026, 4, 9) },
+    { desc: "Campus Bus Pass",  amount: 40,   type: "expense",  category: "Transport",      createdAt: d(2026, 4, 10) },
+    { desc: "Amazon order",     amount: 34,   type: "expense",  category: "Shopping",       createdAt: d(2026, 4, 11) },
+    { desc: "Tutoring income",  amount: 200,  type: "income",   category: "Income",         createdAt: d(2026, 4, 12) },
+    { desc: "Phone Bill",       amount: 45,   type: "expense",  category: "Bills",          createdAt: d(2026, 4, 13) },
   ];
 
   for (const tx of transactions) {
