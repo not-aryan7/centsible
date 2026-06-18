@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+  --font-headline: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Manrope", sans-serif;
+}
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background-color: #eef0f3;
+    color: #2e3336;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, .font-headline {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  button,
+  a[class*="bg-"] {
+    transition: all 0.2s ease;
+  }
+
+  button:active {
+    transform: scale(0.97);
+  }
+
+  input,
+  select {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  input:focus,
+  select:focus {
+    box-shadow: 0 0 0 3px rgba(232, 96, 58, 0.08);
+  }
+
+  ::selection {
+    background-color: #ffd0b8;
+    color: #7a2e10;
+  }
+
+  section,
+  main > div {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.25s ease-out;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #dee3e7;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #adb3b6;
+  }
+}
